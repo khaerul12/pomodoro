@@ -22,14 +22,19 @@
         <h2>Sessions</h2>
         <ul class="list-group mb-3" id="session-list">
             @foreach ($sessions as $session)
-                <li class="list-group-item">
-                    {{ $session->duration }} minutes 
-                    <button class="btn btn-success btn-sm float-end start-timer" data-duration="{{ $session->duration }}">Start</button>
-                    <form action="{{ route('pomodoro.destroy', $session->id) }}" method="POST" class="float-end me-2">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                    </form>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ $session->duration }} minutes
+                    <div>
+                        <!-- Added Start Button -->
+                        <button class="btn btn-success start-timer" data-duration="{{ $session->duration }}">
+                            Start
+                        </button>
+                        <form action="{{ route('pomodoro.destroy', $session) }}" method="POST" class="d-inline">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
                 </li>
             @endforeach
         </ul>
@@ -46,6 +51,12 @@
         let isTimerRunning = false;
 
         function startTimer(duration) {
+            if (isTimerRunning) {
+                if (!confirm('A timer is already running. Do you want to start a new one?')) {
+                    return;
+                }
+            }
+
             let time = duration * 60; // Convert minutes to seconds
             const display = document.getElementById('timer');
             display.style.display = 'block';
@@ -55,7 +66,7 @@
                 const minutes = Math.floor(time / 60);
                 const seconds = time % 60;
 
-                display.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                display.textContent = `Time remaining: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
                 if (--time < 0) {
                     clearInterval(timerInterval);
@@ -79,10 +90,11 @@
         }
 
         document.addEventListener('DOMContentLoaded', function () {
+            // Start buttons functionality
             const startButtons = document.querySelectorAll('.start-timer');
             startButtons.forEach(button => {
                 button.addEventListener('click', function () {
-                    const duration = this.getAttribute('data-duration');
+                    const duration = parseInt(this.getAttribute('data-duration'));
                     startTimer(duration);
                 });
             });
