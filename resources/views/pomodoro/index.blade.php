@@ -25,12 +25,20 @@
                 <li class="list-group-item">
                     {{ $session->duration }} minutes 
                     <button class="btn btn-success btn-sm float-end start-timer" data-duration="{{ $session->duration }}">Start</button>
+                    <form action="{{ route('pomodoro.destroy', $session->id) }}" method="POST" class="float-end me-2">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
                 </li>
             @endforeach
         </ul>
 
         <div id="timer" class="alert alert-info" style="display: none;"></div>
         <button id="stop-timer" class="btn btn-danger" style="display: none;">Stop</button>
+
+        <!-- Audio element for the alarm sound -->
+        <audio id="alarm-sound" src="{{ asset('alarm.mp3') }}" preload="auto"></audio>
     </div>
 
     <script>
@@ -51,6 +59,7 @@
 
                 if (--time < 0) {
                     clearInterval(timerInterval);
+                    document.getElementById('alarm-sound').play(); // Play the alarm sound
                     alert('Pomodoro session is over!');
                     display.style.display = 'none';
                     isTimerRunning = false;
